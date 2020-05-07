@@ -1,6 +1,6 @@
 import os
 import random
-from shutil import copyfile
+import shutil
 
 TRAIN_PCT = 0.98
 DEV_PCT = 0.01
@@ -12,8 +12,8 @@ image_files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(symbol_image
 random.shuffle(image_files)
 total_size = len(image_files)
 breakpoints = [
-    TRAIN_PCT * total_size,
-    (TRAIN_PCT + DEV_PCT) * total_size,
+    int(TRAIN_PCT * total_size),
+    int((TRAIN_PCT + DEV_PCT) * total_size),
 ]
 
 train_set = image_files[:breakpoints[0]]
@@ -22,12 +22,18 @@ test_set = image_files[breakpoints[1]:]
 
 
 def copy_to_set_folder(files, set):
-    for file in files:
+    for i in range(len(files)):
+        file = files[i]
         dest = 'datasets/{}/{}'.format(
             set,
             file.split(symbol_images_path)[1]
         )
-        copyfile(file, dest)
+        subdir = dest.rsplit('/', 1)[0]
+        if not os.path.exists(subdir):
+            os.makedirs(subdir)
+        shutil.move(file, dest)
+        if i % 100 == 0:
+            print('Moved {} files.'.format(i))
 
 
 copy_to_set_folder(train_set, 'train')
