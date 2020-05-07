@@ -1,29 +1,35 @@
 import os
-from shutil import copy2
+import random
+from shutil import copyfile
 
-# reads from ./images, gets all latex symbol classes
-# creates a directory for each latex symbol under
-# ./datasets/train and copies each symbol example
-# to its respective directory
+TRAIN_PCT = 0.98
+DEV_PCT = 0.01
 
-symbols = set()
-symbol_to_files = dict()
-for dirpath, dirnames, filenames in os.walk("./images"):
-    for f in filenames:
-        symbol = f.split(";")[0] 
-        symbols.add(symbol)
-        if symbol in symbol_to_files:
-            symbol_to_files[symbol].append(f)
-        else:
-            symbol_to_files[symbol] = [f]
+symbol_images_path = 'symbol_images/'
+image_files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(symbol_images_path) for f in filenames
+               if os.path.splitext(f)[1] == '.png']
 
+random.shuffle(image_files)
+total_size = len(image_files)
+breakpoints = [
+    TRAIN_PCT * total_size,
+    (TRAIN_PCT + DEV_PCT) * total_size,
+]
 
-for symbol in symbols:
-    path = os.path.join("./datasets/train/", symbol)
-    os.mkdir(path)
-    for filename in symbol_to_files[symbol]:
-        old_filename_path = os.path.join("./images", filename)
-        filename_path = os.path.join(path, filename)
-        copy2(old_filename_path, filename_path)
+train_set = image_files[:breakpoints[0]]
+dev_set = image_files[breakpoints[0]:breakpoints[1]]
+test_set = image_files[breakpoints[1]:]
 
 
+def copy_to_set_folder(files, set):
+    for file in files:
+        dest = 'datasets/{}/{}'.format(
+            set,
+            file.split(symbol_images_path)[1]
+        )
+        copyfile(file, dest)
+
+
+copy_to_set_folder(train_set, 'train')
+copy_to_set_folder(dev_set, 'dev')
+copy_to_set_folder(test_set, 'test')
