@@ -148,7 +148,7 @@ def main():
         scheduler.step()
 
     if args.save_model:
-        torch.save(model.state_dict(), "mnist_cnn.pt")
+        torch.save(model.state_dict(), "latex_cnn.pt")
 
     evaluate(model, device, test_loader)
 
