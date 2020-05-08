@@ -18,8 +18,8 @@ class Net(nn.Module):
         self.dropout1 = nn.Dropout2d(0.05)
         self.dropout2 = nn.Dropout2d(0.05)
         self.dropout3 = nn.Dropout2d(0.05)
-        self.fc1 = nn.Linear(16384, 1000)
-        self.fc2 = nn.Linear(1000, 10)
+        self.fc1 = nn.Linear(16384, 10000)
+        self.fc2 = nn.Linear(10000, 8532)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -84,11 +84,11 @@ def evaluate(model, device, test_loader, val=True):
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
-    parser.add_argument('--batch-size', type=int, default=512, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=1024, metavar='N',
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train')
-    parser.add_argument('--lr', type=float, default=1, metavar='LR',
+    parser.add_argument('--lr', type=float, default=1e-2, metavar='LR',
                         help='learning rate')
     parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
                         help='Learning rate step gamma')
