@@ -12,20 +12,28 @@ from torch.optim.lr_scheduler import StepLR
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3, 1)
-        self.conv2 = nn.Conv2d(32, 64, 3, 1)
-        self.dropout1 = nn.Dropout2d(0.25)
-        self.dropout2 = nn.Dropout2d(0.5)
-        self.fc1 = nn.Linear(57600, 128)
-        self.fc2 = nn.Linear(128, 10)
+        self.conv1 = nn.Conv2d(1, 32, 3, 1, 1)
+        self.conv2 = nn.Conv2d(32, 24, 3, 1, 1)
+        self.conv3 = nn.Conv2d(24, 64, 3, 1, 1)
+        self.dropout1 = nn.Dropout2d(0.05)
+        self.dropout2 = nn.Dropout2d(0.05)
+        self.dropout3 = nn.Dropout2d(0.05)
+        self.fc1 = nn.Linear(16384, 1000)
+        self.fc2 = nn.Linear(1000, 10)
 
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
         x = self.conv2(x)
         x = F.relu(x)
         x = F.max_pool2d(x, 2)
-        x = self.dropout1(x)
+        x = self.dropout2(x)
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout3(x)
         x = torch.flatten(x, 1)
         x = self.fc1(x)
         x = F.relu(x)
@@ -76,7 +84,7 @@ def evaluate(model, device, test_loader, val=True):
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
-    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=512, metavar='N',
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train')
@@ -92,7 +100,7 @@ def main():
                         help='how many batches to wait before logging training status')
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
-                        
+
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -106,7 +114,7 @@ def main():
         datasets.ImageFolder('./datasets/train/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=1),
-                                 transforms.Resize((64, 64)),
+                                 transforms.Resize((128, 128)),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.1307,), (0.3081,))
                              ])),
@@ -115,7 +123,7 @@ def main():
         datasets.ImageFolder('./datasets/dev/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=1),
-                                 transforms.Resize((64, 64)),
+                                 transforms.Resize((128, 128)),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.1307,), (0.3081,))
                              ])),
@@ -124,14 +132,14 @@ def main():
         datasets.ImageFolder('./datasets/test/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=1),
-                                 transforms.Resize((64, 64)),
+                                 transforms.Resize((128, 128)),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.1307,), (0.3081,))
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
     model = Net().to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.01)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
