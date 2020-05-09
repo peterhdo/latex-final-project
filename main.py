@@ -18,8 +18,8 @@ class Net(nn.Module):
         self.dropout1 = nn.Dropout2d(0.05)
         self.dropout2 = nn.Dropout2d(0.05)
         self.dropout3 = nn.Dropout2d(0.05)
-        self.fc1 = nn.Linear(16384, 10000)
-        self.fc2 = nn.Linear(10000, 8532)
+        self.fc1 = nn.Linear(16384, 4000)
+        self.fc2 = nn.Linear(4000, 959)
 
     def forward(self, x):
         x = self.conv1(x)
