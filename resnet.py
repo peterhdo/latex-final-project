@@ -34,7 +34,7 @@ def evaluate(model, device, test_loader, type="Dev"):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += ce_loss(output, target).item()  # sum up batch loss
+            test_loss += ce_loss(output, target)  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
@@ -47,7 +47,7 @@ def evaluate(model, device, test_loader, type="Dev"):
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch ResNet50')
-    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train')
@@ -106,12 +106,10 @@ def main():
     model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch, dev_loader)
         evaluate(model, device, train_loader, "Train")
         evaluate(model, device, dev_loader, "Dev")
-        scheduler.step()
 
     if args.save_model:
         torch.save(model.state_dict(), "latex_resnet.pt")
