@@ -22,6 +22,7 @@ def train(args, model, device, train_loader, optimizer, epoch, dev_loader):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
+        if batch_idx % args.log_eval_interval == 0:
             evaluate(model, device, dev_loader, "Dev")
 
 
@@ -60,6 +61,8 @@ def main():
                         help='random seed')
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
+    parser.add_argument('--log-eval-interval', type=int, default=100, metavar='N',
+                        help='how many batches to wait before logging dev status during training')
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
 
