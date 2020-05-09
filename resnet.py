@@ -47,8 +47,8 @@ def evaluate(model, device, test_loader, val=True):
 
 def main():
     # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
-    parser.add_argument('--batch-size', type=int, default=1024, metavar='N',
+    parser = argparse.ArgumentParser(description='PyTorch ResNet50')
+    parser.add_argument('--batch-size', type=int, default=256, metavar='N',
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train')
@@ -112,7 +112,7 @@ def main():
         scheduler.step()
 
     if args.save_model:
-        torch.save(model.state_dict(), "latex_cnn.pt")
+        torch.save(model.state_dict(), "latex_resnet.pt")
 
     evaluate(model, device, test_loader)
 
