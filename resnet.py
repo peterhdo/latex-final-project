@@ -22,12 +22,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 
-def evaluate(model, device, test_loader, val=True):
-    if val:
-        type = "Dev"
-    else:
-        type = "Test"
-
+def evaluate(model, device, test_loader, type="Dev"):
     model.eval()
     test_loss = 0
     correct = 0
@@ -103,18 +98,19 @@ def main():
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
     model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
-        evaluate(model, device, dev_loader)
+        evaluate(model, device, train_loader, "Train")
+        evaluate(model, device, dev_loader, "Dev")
         scheduler.step()
 
     if args.save_model:
         torch.save(model.state_dict(), "latex_resnet.pt")
 
-    evaluate(model, device, test_loader)
+    evaluate(model, device, test_loader, "Test")
 
 
 if __name__ == '__main__':
