@@ -46,10 +46,10 @@ def evaluate(model, device, test_loader, type="Dev"):
 
 def main():
     # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch ResNet50')
-    parser.add_argument('--batch-size', type=int, default=128, metavar='N',
+    parser = argparse.ArgumentParser(description='PyTorch ResNet')
+    parser.add_argument('--batch-size', type=int, default=32, metavar='N',
                         help='input batch size for training')
-    parser.add_argument('--epochs', type=int, default=5, metavar='N',
+    parser.add_argument('--epochs', type=int, default=20, metavar='N',
                         help='number of epochs to train')
     parser.add_argument('--lr', type=float, default=1e-4, metavar='LR',
                         help='learning rate')
@@ -77,7 +77,7 @@ def main():
         datasets.ImageFolder('./datasets/train/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
-                                 transforms.CenterCrop((256,256)),
+                                 transforms.Resize((256,256)),
                                  transforms.ToTensor(),
                                  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                              ])),
@@ -86,7 +86,7 @@ def main():
         datasets.ImageFolder('./datasets/dev/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
-                                 transforms.CenterCrop((256,256)),
+                                 transforms.Resize((256,256)),
                                  transforms.ToTensor(),
                                  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                              ])),
@@ -95,14 +95,14 @@ def main():
         datasets.ImageFolder('./datasets/test/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
-                                 transforms.CenterCrop((256,256)),
+                                 transforms.Resize((256,256)),
                                  transforms.ToTensor(),
                                  transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-5)
+    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet152', pretrained=False).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch, dev_loader)
