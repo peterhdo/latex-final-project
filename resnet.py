@@ -51,10 +51,8 @@ def main():
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train')
-    parser.add_argument('--lr', type=float, default=1e-2, metavar='LR',
+    parser.add_argument('--lr', type=float, default=1e-4, metavar='LR',
                         help='learning rate')
-    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
-                        help='Learning rate step gamma')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
     parser.add_argument('--seed', type=int, default=1, metavar='S',
