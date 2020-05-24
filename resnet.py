@@ -47,9 +47,9 @@ def evaluate(model, device, test_loader, type="Dev"):
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch ResNet')
-    parser.add_argument('--batch-size', type=int, default=32, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                         help='input batch size for training')
-    parser.add_argument('--epochs', type=int, default=20, metavar='N',
+    parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train')
     parser.add_argument('--lr', type=float, default=1e-4, metavar='LR',
                         help='learning rate')
@@ -74,7 +74,7 @@ def main():
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
     train_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/train/',
+        datasets.ImageFolder('./datasets10/train/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((256,256)),
@@ -83,7 +83,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     dev_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/dev/',
+        datasets.ImageFolder('./datasets10/dev/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((256,256)),
@@ -92,7 +92,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/test/',
+        datasets.ImageFolder('./datasets10/test/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((256,256)),
@@ -101,7 +101,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet152', pretrained=False).to(device)
+    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     for epoch in range(1, args.epochs + 1):
