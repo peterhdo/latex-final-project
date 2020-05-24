@@ -8,6 +8,8 @@ from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
 # Based off of https://github.com/pytorch/examples/tree/master/mnist
+NUM_CLASSES = 959
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -19,7 +21,7 @@ class Net(nn.Module):
         self.dropout2 = nn.Dropout2d(0.05)
         self.dropout3 = nn.Dropout2d(0.05)
         self.fc1 = nn.Linear(16384, 4000)
-        self.fc2 = nn.Linear(4000, 959)
+        self.fc2 = nn.Linear(4000, NUM_CLASSES)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -81,6 +83,7 @@ def evaluate(model, device, test_loader, val=True):
         type, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
+
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
@@ -110,8 +113,10 @@ def main():
 
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
+    datasets_dir_suffix = '' if NUM_CLASSES == 959 else str(NUM_CLASSES)
+    datasets_dir = 'datasets{}'.format(datasets_dir_suffix)
     train_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/train/',
+        datasets.ImageFolder('./{}/train/'.format(datasets_dir),
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=1),
                                  transforms.Resize((128, 128)),
@@ -120,7 +125,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     dev_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/dev/',
+        datasets.ImageFolder('./{}/dev/'.format(datasets_dir),
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=1),
                                  transforms.Resize((128, 128)),
@@ -129,7 +134,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/test/',
+        datasets.ImageFolder('./{}/test/'.format(datasets_dir),
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=1),
                                  transforms.Resize((128, 128)),
