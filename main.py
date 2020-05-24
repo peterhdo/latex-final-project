@@ -1,5 +1,6 @@
 from __future__ import print_function
 import argparse
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,6 +9,8 @@ from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
 # Based off of https://github.com/pytorch/examples/tree/master/mnist
+NUM_SYMBOLS = 50
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -81,6 +84,32 @@ def evaluate(model, device, test_loader, val=True):
         type, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
+
+def get_largest_classes(n):
+    file_path = './datasets/train/'
+    class_sizes = {}
+    for dir_path, _, file_names in os.walk(file_path):
+        symbol = dir_path.split('/')[-1]
+        class_sizes[symbol] = len(file_names)
+    return [k for k, v in sorted(class_sizes.items(), key=lambda item: item[1], reverse=True)][:n]
+
+
+def get_valid_prefixes():
+    largest_classes = get_largest_classes(NUM_SYMBOLS)
+    prefixes = []
+    for symbol in largest_classes:
+        for dataset_type in ['train', 'dev', 'test']:
+            prefixes.append('./datasets/{}/{}/'.format(dataset_type, symbol))
+    return tuple(prefixes)
+
+
+valid_prefixes = get_valid_prefixes()
+
+
+def is_valid_file(f):
+    return f.startswith(valid_prefixes)
+
+
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
@@ -117,7 +146,8 @@ def main():
                                  transforms.Resize((128, 128)),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.1307,), (0.3081,))
-                             ])),
+                             ]),
+                             is_valid_file=is_valid_file),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     dev_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder('./datasets/dev/',
@@ -126,7 +156,8 @@ def main():
                                  transforms.Resize((128, 128)),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.1307,), (0.3081,))
-                             ])),
+                             ]),
+                             is_valid_file=is_valid_file),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder('./datasets/test/',
@@ -135,7 +166,8 @@ def main():
                                  transforms.Resize((128, 128)),
                                  transforms.ToTensor(),
                                  transforms.Normalize((0.1307,), (0.3081,))
-                             ])),
+                             ]),
+                             is_valid_file=is_valid_file),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
     model = Net().to(device)
