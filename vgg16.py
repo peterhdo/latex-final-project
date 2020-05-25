@@ -74,10 +74,11 @@ def main():
     torch.manual_seed(args.seed)
 
     device = torch.device("cuda" if use_cuda else "cpu")
+    print('Using gpu: {}'.format(use_cuda))
 
     # TODO(kbaichoo): use more num_workers -- likely have memory on machines
     # to raise it up for 2,4... might make mini-batch processing better
-    kwargs = {'num_workers': 2, 'pin_memory': True} if use_cuda else {}
+    kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
     
     train_loader = torch.utils.data.DataLoader(
         datasets.ImageFolder('{}/train/'.format(DATASET_BASE_PATH),
@@ -120,6 +121,7 @@ def main():
     features = list(model.classifier.children())[:-1]  # Remove last layer
     # Add our layer with NUM_OUTPUT_CLASSES 
     features.extend([nn.Linear(num_features, NUM_OUTPUT_CLASSES)])
+    features[-1].to(device)
     model.classifier = nn.Sequential(*features)  # Replace the model classifier
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
