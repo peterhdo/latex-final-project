@@ -153,7 +153,7 @@ def main():
     model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
 
     # Freeze training for all layers (since we're just appending a final layer)
-    for param in model.features.parameters():
+    for param in model.parameters():
         param.require_grad = False
 
     # Newly created modules have require_grad=True by default
