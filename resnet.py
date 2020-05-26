@@ -98,7 +98,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch ResNet')
     parser.add_argument('--batch-size', type=int, default=32, metavar='N',
                         help='input batch size for training')
-    parser.add_argument('--epochs', type=int, default=5, metavar='N',
+    parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train')
     parser.add_argument('--lr', type=float, default=1e-4, metavar='LR',
                         help='learning rate')
@@ -150,15 +150,17 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=True).to(device)
+    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet152', pretrained=False).to(device)
 
-    # Freeze training for all layers (since we're just appending a final layer)
-    for param in model.parameters():
-        param.require_grad = False
+    # model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=True).to(device)
 
-    # Newly created modules have require_grad=True by default
-    num_features = model.fc.in_features
-    model.fc = nn.Linear(num_features, NUM_OUTPUT_CLASSES)
+    # # Freeze training for all layers (since we're just appending a final layer)
+    # for param in model.parameters():
+    #     param.require_grad = False
+    #
+    # # Newly created modules have require_grad=True by default
+    # num_features = model.fc.in_features
+    # model.fc = nn.Linear(num_features, 50).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
@@ -168,7 +170,7 @@ def main():
         evaluate(model, device, dev_loader, "Dev")
 
     if args.save_model:
-        torch.save(model.state_dict(), "latex_resnet.pt")
+        torch.save(model.state_dict(), "latex_resnet152.pt")
 
     evaluate(model, device, test_loader, "Test")
 
