@@ -1,12 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 
 train_epoch_loss = []
 val_accuracy = []
 train_accuracy = []
 
-with open('resnet152_1.txt') as fp:
+# Update these constants for generating the plots with other graphs.
+MODEL_NAME = 'VGG16 - Batch Normalization'
+INPUT_FILE = './vgg16bn_out'
+OUTPUT_IMAGE_FILES = 'milestone2_vgg16_'
+
+with open(INPUT_FILE) as fp:
     lines = fp.readlines()
     for line in lines:
         if line.startswith("Train Epoch"):
@@ -29,9 +33,10 @@ val_acc_x = np.linspace(0, len(val_accuracy), len(val_accuracy))
 val_accuracy = [v * 100 for v in val_accuracy]
 
 plt.plot(val_acc_x, val_accuracy)
-plt.title('ResNet 152 Validation Accuracy')
+plt.title('{} Validation Accuracy'.format(MODEL_NAME))
 plt.xlabel('Every 100 Batches')
 plt.ylabel('Accuracy (Percent)')
+plt.savefig(OUTPUT_IMAGE_FILES + 'validation_accuracy.png')
 plt.show()
 
 train_acc_x = np.linspace(0, len(train_accuracy), len(train_accuracy))
@@ -39,9 +44,10 @@ train_acc_x = np.linspace(0, len(train_accuracy), len(train_accuracy))
 train_accuracy = [v * 100 for v in train_accuracy]
 
 plt.plot(train_acc_x, train_accuracy)
-plt.title('ResNet 152 Training Accuracy')
+plt.title('{} Training Accuracy'.format(MODEL_NAME))
 plt.xlabel('Number of Epochs')
 plt.ylabel('Accuracy (Percent)')
+plt.savefig(OUTPUT_IMAGE_FILES + 'train_accuracy.png')
 plt.show()
 
 
@@ -68,7 +74,8 @@ n_loss = len(no_outliers)
 train_epoch_x = np.linspace(0, n_loss, n_loss)
 
 plt.plot(train_epoch_x, no_outliers)
-plt.title('ResNet 152 Training Loss')
+plt.title('{} Training Loss'.format(MODEL_NAME))
 plt.xlabel('Number of Batches')
 plt.ylabel('Cross-Entropy Loss (per batch)')
+plt.savefig(OUTPUT_IMAGE_FILES + 'train_loss.png')
 plt.show()
