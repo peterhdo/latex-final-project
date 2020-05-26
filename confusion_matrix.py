@@ -18,6 +18,8 @@ import time
 
 ce_loss = torch.nn.CrossEntropyLoss(size_average=False)
 
+# referencing https://github.com/KBaichoo/cs221/blob/master/scripts/test_and_cm.py
+
 class Laplace(object):
     """Applies Laplacian. Args - kernel size."""
 
