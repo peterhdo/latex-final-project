@@ -157,12 +157,8 @@ def main():
         param.require_grad = False
 
     # Newly created modules have require_grad=True by default
-    num_features = model.classifier[-1].in_features
-    features = list(model.classifier.children())[:-1]  # Remove last layer
-    # Add our layer with NUM_OUTPUT_CLASSES
-    features.extend([nn.Linear(num_features, NUM_OUTPUT_CLASSES)])
-    features[-1].to(device)
-    model.classifier = nn.Sequential(*features)  # Replace the model classifier
+    num_features = model.fc.in_features
+    model.fc = nn.Linear(num_features, NUM_OUTPUT_CLASSES)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
