@@ -10,6 +10,7 @@ ce_loss = torch.nn.CrossEntropyLoss(size_average=False)
 # Constants to change if we changing the number of classes, dataset path, etc.
 DATASET_BASE_PATH = './datasets50'
 NUM_OUTPUT_CLASSES = 50
+MODEL_FILE = 'latex_vgg16bn.pt'
 
 
 def train(args, model, device, train_loader, optimizer, epoch, dev_loader):
@@ -29,7 +30,12 @@ def train(args, model, device, train_loader, optimizer, epoch, dev_loader):
             evaluate(model, device, dev_loader, "Dev")
 
 
-def evaluate(model, device, test_loader, type="Dev"):
+def evaluate(model, device, test_loader, type="Dev", top_k=0):
+    """
+    Evaluates the model on a given device using the specified test loader.
+    You can specify top_k as some positive number if you're interested in
+    accuracy based on the top_k ouputs.
+    """
     model.eval()
     test_loss = 0
     correct = 0
@@ -39,14 +45,39 @@ def evaluate(model, device, test_loader, type="Dev"):
             output = model(data)
             test_loss += ce_loss(output, target)  # sum up batch loss
             # get the index of the max log-probability
-            pred = output.argmax(dim=1, keepdim=True)
-            correct += pred.eq(target.view_as(pred)).sum().item()
+            if top_k:
+                topk_acc = accuracy(output, target, topk=(top_k))
+                import pdb
+                pdb.set_trace()
+            else:
+                pred = output.argmax(dim=1, keepdim=True)
+                correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
 
     print('\n{} set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         type, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+
+
+def accuracy(output, target, topk=(1,)):
+    """
+    Computes the accuracy over the k top predictions for the specified values
+    of k
+    """
+    with torch.no_grad():
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        _, pred = output.topk(maxk, 1, True, True)
+        pred = pred.t()
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+        res = []
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            res.append(correct_k.mul_(100.0 / batch_size))
+        return res
 
 
 def main():
@@ -71,6 +102,12 @@ def main():
                         'status during training')
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
+    # Support testing top-N accuracy
+    parser.add_arguments('--test-model', action='store_true', default=False,
+                         help='If we want to just test the model using top-k')
+    parser.add_argument('--top_k', type=int, default=5, metavar='N',
+                        help='How many of the top outputs in the softmax to'
+                        ' consider for accuracy.')
 
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -134,15 +171,24 @@ def main():
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
-    for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch, dev_loader)
-        evaluate(model, device, train_loader, "Train")
-        evaluate(model, device, dev_loader, "Dev")
+    if args.test_model:
+        # Just test the model assuming the model output file.
+        # Use top-k in testing accuracy.
+        # Load the weights
+        model.load_state_dict(torch.load(MODEL_FILE))
+        evaluate(model, device, test_loader, "Test")
+    else:
+        # Train the model from scratch
+        for epoch in range(1, args.epochs + 1):
+            train(args, model, device, train_loader,
+                  optimizer, epoch, dev_loader)
+            evaluate(model, device, train_loader, "Train")
+            evaluate(model, device, dev_loader, "Dev")
 
-    if args.save_model:
-        torch.save(model.state_dict(), "latex_vgg16bn.pt")
+        if args.save_model:
+            torch.save(model.state_dict(), MODEL_FILE)
 
-    evaluate(model, device, test_loader, "Test")
+        evaluate(model, device, test_loader, "Test")
 
 
 if __name__ == '__main__':
