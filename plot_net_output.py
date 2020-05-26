@@ -6,9 +6,9 @@ val_accuracy = []
 train_accuracy = []
 
 # Update these constants for generating the plots with other graphs.
-MODEL_NAME = 'VGG16 - Batch Normalization'
-INPUT_FILE = './vgg16bn_out'
-OUTPUT_IMAGE_FILES = 'milestone2_vgg16_'
+MODEL_NAME = 'ResNet152'
+INPUT_FILE = './resnet152_2.txt'
+OUTPUT_IMAGE_FILES = 'milestone2_ResNet152_'
 
 with open(INPUT_FILE) as fp:
     lines = fp.readlines()
