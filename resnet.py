@@ -90,9 +90,6 @@ def evaluate(model, device, test_loader, type="Dev"):
         type, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
-    import pdb
-    pdb.set_trace()
-
     print(' * Acc@5 {top5.avg:.3f}'
           .format(top5=top5))
 
@@ -126,7 +123,7 @@ def main():
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
     train_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/train/',
+        datasets.ImageFolder('./datasets50/train/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((256,256)),
@@ -135,7 +132,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     dev_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/dev/',
+        datasets.ImageFolder('./datasets50/dev/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((256,256)),
@@ -144,7 +141,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('./datasets/test/',
+        datasets.ImageFolder('./datasets50/test/',
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((256,256)),
@@ -153,7 +150,20 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet152', pretrained=False).to(device)
+    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
+
+    # Freeze training for all layers (since we're just appending a final layer)
+    for param in model.features.parameters():
+        param.require_grad = False
+
+    # Newly created modules have require_grad=True by default
+    num_features = model.classifier[-1].in_features
+    features = list(model.classifier.children())[:-1]  # Remove last layer
+    # Add our layer with NUM_OUTPUT_CLASSES
+    features.extend([nn.Linear(num_features, NUM_OUTPUT_CLASSES)])
+    features[-1].to(device)
+    model.classifier = nn.Sequential(*features)  # Replace the model classifier
+
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     for epoch in range(1, args.epochs + 1):
