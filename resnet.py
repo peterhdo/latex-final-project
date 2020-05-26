@@ -150,7 +150,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
+    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=True).to(device)
 
     # Freeze training for all layers (since we're just appending a final layer)
     for param in model.parameters():
