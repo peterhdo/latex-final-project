@@ -46,9 +46,12 @@ def evaluate(model, device, test_loader, type="Dev", top_k=0):
             test_loss += ce_loss(output, target)  # sum up batch loss
             # get the index of the max log-probability
             if top_k:
-                topk_acc = accuracy(output, target, topk=(top_k))
-                import pdb
-                pdb.set_trace()
+                # Add the number correct from this batch.
+                topk_acc = accuracy(output, target, topk=[top_k])[0]
+                pred_acc = topk_acc.item()
+                curr_batch_size = data.size()[0]
+                batch_correct = (curr_batch_size * pred_acc) / 100
+                correct += batch_correct
             else:
                 pred = output.argmax(dim=1, keepdim=True)
                 correct += pred.eq(target.view_as(pred)).sum().item()
@@ -103,7 +106,7 @@ def main():
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
     # Support testing top-N accuracy
-    parser.add_arguments('--test-model', action='store_true', default=False,
+    parser.add_argument('--test-model', action='store_true', default=False,
                          help='If we want to just test the model using top-k')
     parser.add_argument('--top_k', type=int, default=5, metavar='N',
                         help='How many of the top outputs in the softmax to'
@@ -176,7 +179,7 @@ def main():
         # Use top-k in testing accuracy.
         # Load the weights
         model.load_state_dict(torch.load(MODEL_FILE))
-        evaluate(model, device, test_loader, "Test")
+        evaluate(model, device, test_loader, "Test", top_k=args.top_k)
     else:
         # Train the model from scratch
         for epoch in range(1, args.epochs + 1):
