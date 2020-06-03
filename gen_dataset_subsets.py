@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+"""
+Generates a subset of the dataset based on the number of subclasses you want.
+Subclasses are generated based on the amount of data they have. 
+So running this with --n 5 would give subsets with the top 5 most data.
+"""
 import argparse
 import os
 from distutils.dir_util import copy_tree
