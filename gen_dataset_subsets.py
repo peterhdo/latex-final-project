@@ -19,7 +19,7 @@ def get_largest_classes(n):
     for dir_path, _, file_names in os.walk(file_path):
         symbol = dir_path.split('/')[-1]
         class_sizes[symbol] = len(file_names)
-    return [k for k, v in sorted(class_sizes.items(), key=lambda item: item[1], reverse=False)][3:n+3]
+    return [k for k, v in sorted(class_sizes.items(), key=lambda item: item[1], reverse=True)][:n]
 
 
 def copy_tree_process(args):
