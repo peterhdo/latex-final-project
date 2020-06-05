@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from __future__ import print_function
 import argparse
 import torch
@@ -8,7 +9,7 @@ from torchvision import datasets, transforms
 ce_loss = torch.nn.CrossEntropyLoss(size_average=False)
 
 # Constants to change if we changing the number of classes, dataset path, etc.
-DATASET_BASE_PATH = './datasets50'
+DATASET_BASE_PATH = '../datasets50'
 NUM_OUTPUT_CLASSES = 50
 MODEL_FILE = 'latex_vgg16bn.pt'
 
@@ -104,27 +105,50 @@ def main():
                         help='how many batches to wait before logging dev '
                         'status during training')
     parser.add_argument('--save-model', action='store_true', default=False,
-                        help='For Saving the current Model')
+                        help='For Saving the current Model in the default '
+                        'path')
+    # To make our script more CLI friendly
+    parser.add_argument('--num-classes', type=int,
+                        metavar='N',
+                        help='How many output classes to expect. If not '
+                        'specified uses the constant NUM_OUTPUT_CLASSES.')
+    parser.add_argument('--dataset-path',
+                        help='Path to the dataset to use. If not specified'
+                        ' uses the constant DATASET_BASE_PATH.')
     # Support testing top-N accuracy
     parser.add_argument('--test-model', action='store_true', default=False,
-                         help='If we want to just test the model using top-k')
+                        help='If we want to just test the model using top-k')
     parser.add_argument('--top_k', type=int, default=5, metavar='N',
                         help='How many of the top outputs in the softmax to'
                         ' consider for accuracy.')
+    parser.add_argument('--load-model-file', 
+                        help='Path to load the model file from.')
 
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
 
     torch.manual_seed(args.seed)
 
+    # Determine device, output classes and dataset path
     device = torch.device("cuda" if use_cuda else "cpu")
+    out_classes = args.num_classes if args.num_classes else NUM_OUTPUT_CLASSES
+    data_path = DATASET_BASE_PATH
+
+    if args.dataset_path:
+        data_path = args.dataset_path
+        # Remove trailing slashes
+        if data_path.endswith('/'):
+            data_path = data_path[:-1]
+
     print('Using gpu: {}'.format(use_cuda))
+    print('Number of output classes:{}'.format(out_classes))
+    print('Using dataset path {}'.format(data_path))
 
     # You can use more num_workers if there's more memory on the machine
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
     train_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('{}/train/'.format(DATASET_BASE_PATH),
+        datasets.ImageFolder('{}/train/'.format(data_path),
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((224, 224)),
@@ -135,7 +159,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     dev_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('{}/dev/'.format(DATASET_BASE_PATH),
+        datasets.ImageFolder('{}/dev/'.format(data_path),
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((224, 224)),
@@ -146,7 +170,7 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder('{}/test/'.format(DATASET_BASE_PATH),
+        datasets.ImageFolder('{}/test/'.format(data_path),
                              transform=transforms.Compose([
                                  transforms.Grayscale(num_output_channels=3),
                                  transforms.Resize((224, 224)),
@@ -167,8 +191,8 @@ def main():
     # Newly created modules have require_grad=True by default
     num_features = model.classifier[-1].in_features
     features = list(model.classifier.children())[:-1]  # Remove last layer
-    # Add our layer with NUM_OUTPUT_CLASSES
-    features.extend([nn.Linear(num_features, NUM_OUTPUT_CLASSES)])
+    # Add our layer with NUM_OUTPUT_CLASSES, or the specified class amount.
+    features.extend([nn.Linear(num_features, out_classes)])
     features[-1].to(device)
     model.classifier = nn.Sequential(*features)  # Replace the model classifier
 
@@ -178,7 +202,10 @@ def main():
         # Just test the model assuming the model output file.
         # Use top-k in testing accuracy.
         # Load the weights
-        model.load_state_dict(torch.load(MODEL_FILE))
+        model_file_path = MODEL_FILE
+        if args.load_model_file:
+            model_file_path = args.load_model_file
+        model.load_state_dict(torch.load(model_file_path))
         evaluate(model, device, test_loader, "Test", top_k=args.top_k)
     else:
         # Train the model from scratch
