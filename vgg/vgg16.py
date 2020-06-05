@@ -121,6 +121,8 @@ def main():
     parser.add_argument('--top_k', type=int, default=5, metavar='N',
                         help='How many of the top outputs in the softmax to'
                         ' consider for accuracy.')
+    parser.add_argument('--load-model-file', 
+                        help='Path to load the model file from.')
 
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -200,7 +202,10 @@ def main():
         # Just test the model assuming the model output file.
         # Use top-k in testing accuracy.
         # Load the weights
-        model.load_state_dict(torch.load(MODEL_FILE))
+        model_file_path = MODEL_FILE
+        if args.load_model_file:
+            model_file_path = args.load_model_file
+        model.load_state_dict(torch.load(model_file_path))
         evaluate(model, device, test_loader, "Test", top_k=args.top_k)
     else:
         # Train the model from scratch
