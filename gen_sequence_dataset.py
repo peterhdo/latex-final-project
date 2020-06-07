@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+from gen_dataset_subsets import get_largest_classes
 from shutil import copyfile
 
 
@@ -39,9 +40,10 @@ def create_new_sequence_name(num_classes_folder_path):
     return f'seq_{str(max_seq_num + 1)}'
 
 
-def create_new_sequence_folder(num_classes_folder_path, sequence_images):
+def create_new_sequence_folder(num_classes_folder_path, sequence_images, num_classes):
     seq_name = create_new_sequence_name(num_classes_folder_path)
     sequence_folder = f'{num_classes_folder_path}/{seq_name}'
+    make_all_symbol_subdirs(num_classes, sequence_folder)
     for sequence_image in sequence_images:
         sequence_image_parts = sequence_image.split('/')
         symbol = sequence_image_parts[-2]
@@ -55,7 +57,13 @@ def generate_sequence(num_classes, num_classes_folder_path, images_per_sequence)
     datasets_dir = 'datasets{}/test/'.format(datasets_dir_suffix)
     image_files = get_images_in_dir(datasets_dir)
     sequence_images = get_unused_images(image_files, images_per_sequence, num_classes_folder_path)
-    create_new_sequence_folder(num_classes_folder_path, sequence_images)
+    create_new_sequence_folder(num_classes_folder_path, sequence_images, num_classes)
+
+
+def make_all_symbol_subdirs(num_classes, sequence_folder):
+    classes = get_largest_classes(num_classes)
+    for c in classes:
+        make_folder(f'{sequence_folder}/{c}')
 
 
 def main():
