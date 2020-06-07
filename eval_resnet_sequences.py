@@ -75,7 +75,7 @@ def main():
             batch_size=args.batch_size, shuffle=True, **kwargs)
 
         model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
-        model.load_state_dict(torch.load('./resnet50_final_experiments/latex_resnet50_500.pt'))
+        model.load_state_dict(torch.load('./resnet50_final_experiments/latex_resnet50_200.pt'))
         model.eval()
 
         evaluate_sequence(model, device, test_loader, type="Test")
