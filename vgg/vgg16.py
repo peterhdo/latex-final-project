@@ -86,7 +86,7 @@ def accuracy(output, target, topk=(1,)):
 
 def main():
     # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch ResNet')
+    parser = argparse.ArgumentParser(description='PyTorch VGG')
     parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
@@ -121,7 +121,7 @@ def main():
     parser.add_argument('--top_k', type=int, default=5, metavar='N',
                         help='How many of the top outputs in the softmax to'
                         ' consider for accuracy.')
-    parser.add_argument('--load-model-file', 
+    parser.add_argument('--load-model-file',
                         help='Path to load the model file from.')
 
     args = parser.parse_args()
