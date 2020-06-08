@@ -3,7 +3,6 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import kornia
 
 import torch.optim as optim
 from torchvision import datasets, transforms
@@ -17,8 +16,11 @@ import time
 
 ce_loss = torch.nn.CrossEntropyLoss(size_average=False)
 
+total_correct = 0
+total_examples = 0 
 
 def evaluate_sequence(model, device, test_loader, type="Test"):
+    global total_correct, total_examples
     model.eval()
     test_loss = 0
     correct = 0
@@ -36,12 +38,14 @@ def evaluate_sequence(model, device, test_loader, type="Test"):
     print('\n{} set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         type, test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+    total_examples += len(test_loader.dataset)
+    total_correct += correct
 
 
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch VGG')
-    parser.add_argument('--batch-size', type=int, default=1, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=8, metavar='N',
                         help='input batch size for training')
     parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train')
@@ -60,27 +64,37 @@ def main():
     device = torch.device("cuda" if use_cuda else "cpu")
 
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
+    
+    model = torch.hub.load('pytorch/vision:v0.6.0',
+                           'vgg16_bn', pretrained=True).to(device)
+    
+    # Newly created modules have require_grad=True by default
+    num_features = model.classifier[-1].in_features
+    features = list(model.classifier.children())[:-1]  # Remove last layer
+    # Add our layer with NUM_OUTPUT_CLASSES, or the specified class amount.
+    features.extend([nn.Linear(num_features, 200)])
+    features[-1].to(device)
+    model.classifier = nn.Sequential(*features)  # Replace the model classifier
+    
+    model.load_state_dict(torch.load('./latex_vgg16bn_200.pt'))
 
-    for i in range(1, 100):
+    for i in range(1, 101):
         test_loader = torch.utils.data.DataLoader(
             datasets.ImageFolder('../sequence_datasets/classes_200/seq_{}/'.format(i),
                                  transform=transforms.Compose([
                                      transforms.Grayscale(
                                          num_output_channels=3),
-                                     transforms.Resize((256, 256)),
+                                     transforms.Resize((224, 224)),
                                      transforms.ToTensor(),
-                                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
-                                                          0.229, 0.224, 0.225])
+                                     transforms.Normalize(
+                                         mean=[0.485, 0.456, 0.406], std=[
+                                             0.229, 0.224, 0.225])
                                  ])),
             batch_size=args.batch_size, shuffle=True, **kwargs)
 
-        model = torch.hub.load('pytorch/vision:v0.6.0',
-                               'vgg16_bn', pretrained=True).to(device)
-        model.load_state_dict(torch.load(
-            './latex_vgg16bn_200.pt'))
-        model.eval()
 
         evaluate_sequence(model, device, test_loader, type="Test")
+    print('Total correct: {}, Total: {}'.format(total_correct, total_examples))
 
 
 if __name__ == '__main__':
