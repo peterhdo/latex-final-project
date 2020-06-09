@@ -3,7 +3,7 @@ This is our repo.
 
 to generate particular dataset subsets use the `gen_dataset_subsets.py` script.
 
-Our vgg model is in the vgg folder.
+Our vgg model is in the vgg folder. Our resnet model is in the resnet folder.
 
 ## Sequence generator script usage
 This script will generate image "sequences" (using the term loosely; these are really just lists of images)
