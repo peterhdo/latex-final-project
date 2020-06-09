@@ -6,9 +6,9 @@ val_accuracy = []
 train_accuracy = []
 
 # Update these constants for generating the plots with other graphs.
-MODEL_NAME = 'ResNet152'
-INPUT_FILE = './resnet152_2.txt'
-OUTPUT_IMAGE_FILES = 'milestone2_ResNet152_'
+MODEL_NAME = 'ResNet50'
+INPUT_FILE = './resnet50_final_experiments/resnet50_50.txt'
+OUTPUT_IMAGE_FILES = 'final_ResNet50_'
 
 with open(INPUT_FILE) as fp:
     lines = fp.readlines()

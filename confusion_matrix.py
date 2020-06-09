@@ -64,12 +64,12 @@ def cm(args, model, device, test_loader):
     fig, ax = plt.subplots(figsize=(20, 18))
 
     sn.heatmap(cm_pd, annot=True)# font size
-    plt.title('ResNet152 Confusion Matrix for 50 classes', fontsize=20)
+    plt.title('ResNet50 Confusion Matrix for 50 classes', fontsize=20)
     plt.ylabel('True label', fontsize=14)
     plt.xlabel('Predicted label', fontsize=14)
     plt.tick_params(axis='both', labelsize=14)
     # plt.tight_layout()
-    plt.savefig('resnet_152_confusion_matrix.png')
+    plt.savefig('resnet_50_confusion_matrix.png')
 
 def main():
     # Training settings
@@ -109,8 +109,8 @@ def main():
                              ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet152', pretrained=False).to(device)
-    model.load_state_dict(torch.load('./latex_resnet152.pt'))
+    model = torch.hub.load('pytorch/vision:v0.4.2', 'resnet50', pretrained=False).to(device)
+    model.load_state_dict(torch.load('./resnet50_final_experiments/latex_resnet50_50.pt'))
     model.eval()
 
     cm(args, model, device, test_loader)

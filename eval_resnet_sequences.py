@@ -18,6 +18,10 @@ import time
 ce_loss = torch.nn.CrossEntropyLoss(size_average=False)
 
 def evaluate_sequence(model, device, test_loader, type="Test"):
+    class_to_idx = test_loader.dataset.class_to_idx
+    labels = [None] * 200
+    for (c, i) in class_to_idx.items():
+        labels[i] = c
     model.eval()
     test_loss = 0
     correct = 0
@@ -28,6 +32,9 @@ def evaluate_sequence(model, device, test_loader, type="Test"):
             test_loss += ce_loss(output, target)  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
+
+            print(labels[target[0]])
+            print(labels[pred[0]])
 
     test_loss /= len(test_loader.dataset)
 
@@ -63,9 +70,10 @@ def main():
 
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
-    for i in range(1,100):
+#    for i in range(1,100):
+    for i in range(1,3):
         test_loader = torch.utils.data.DataLoader(
-            datasets.ImageFolder('./sequence_datasets/classes_200/seq_{}/'.format(i),
+            datasets.ImageFolder('./custom_sequences/seq_{}/'.format(i),
                                  transform=transforms.Compose([
                                      transforms.Grayscale(num_output_channels=3),
                                      transforms.Resize((256,256)),

@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 
 # Modifiy the data here for your heatmap.
 data = [
-    [75, 87, 91, 95, 97], # Output for 50 class classifier
-    [67, 83, 89, 92, 95], # Output for 100 class classifier
-    [58, 75, 83, 88, 92],
-    [53, 71, 79, 86, 89],
-    [48, 67, 75, 80, 84],
-    [44, 58, 66, 71, 74],
-    [35, 49, 55, 61, 65] # Output for 959 class classifier
+    [75, 90, 94, 96, 98], # Output for 50 class classifier
+    [67, 84, 89, 94, 96], # Output for 100 class classifier
+    [61, 76, 85, 90, 92],
+    [55, 74, 82, 86, 90],
+    [53, 70, 78, 83, 87],
+    [47, 63, 70, 74, 78],
+    [39, 53, 60, 64, 69] # Output for 959 class classifier
 ][::-1]
 idx = ['50', '100', '150', '200', '250', '500', '959'][::-1]
 
@@ -25,7 +25,7 @@ t -= 0.5 # Subtract 0.5 from the top
 plt.ylim(b, t) # update the ylim(bottom, top) values
 
 # Add titles
-plt.title('Heatmap of Accuracy Given model size and top-N')
-plt.xlabel('Top-N')
-plt.ylabel('# of output classes')
+plt.title('Top-N Accuracy for N-Classes (ResNet50)')
+plt.xlabel('Top-N Accuracy')
+plt.ylabel('Number of Classes')
 plt.show() 
