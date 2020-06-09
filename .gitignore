@@ -1,1 +1,7 @@
 *.pt
+__pycache__
+datasets100
+datasets150
+datasets200
+datasets250
+datasets500
